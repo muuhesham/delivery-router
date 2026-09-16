@@ -1,0 +1,4 @@
+/.vscode
+*.pdf
+/data
+/node_modules
