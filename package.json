@@ -18,11 +18,15 @@
     "logistics"
   ],
   "scripts": {
-    "start": "nodemon --ignore data/trips.json --ignore data/rejectedDeliveries.json src/index.js"
+    "cli": "nodemon --ignore data/trips.json --ignore data/rejectedDeliveries.json src/index.js",
+    "server": "nodemon src/server.js"
   },
   "author": "",
   "license": "MIT",
   "type": "module",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
   "devDependencies": {
     "nodemon": "^3.1.14"
   }

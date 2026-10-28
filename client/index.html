@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Delivery Route Planner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="terminal-window">
+      <header class="terminal-titlebar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <strong>Delivery Route Planner</strong>
+      </header>
+
+      <section class="terminal-content">
+        <div id="status" class="status">Loading deliveries...</div>
+        <section class="panel">
+          <h2>Add Delivery</h2>
+          <form id="delivery-form">
+            <label>ID <input name="id" type="number" min="1" step="1" required /></label>
+            <label>Area <input name="area" required /></label>
+            <label>Priority <input name="priority" type="number" min="1" max="3" step="1" required /></label>
+            <label>Weight <input name="weight" type="number" min="0.01" max="10" step="0.01" required /></label>
+            <button type="submit">Add Delivery</button>
+          </form>
+        </section>
+        <section class="panel">
+          <h2>Deliveries</h2>
+          <div id="deliveries" class="output"></div>
+        </section>
+        <section class="panel">
+          <h2>Trip Plan</h2>
+          <button id="plan-button" type="button">Generate Trips</button>
+          <button id="summary-button" type="button">Show Summary</button>
+          <div id="plan" class="output"></div>
+          <div id="summary" class="output"></div>
+        </section>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,9 +1,14 @@
 import { readFile } from "node:fs/promises";
-import { planDeliveryTrips, summary } from "./planner.js";
+import { fileURLToPath } from "node:url";
+import { clearPreviousOutputs, planDeliveryTrips, summary } from "./planner.js";
+
+const deliveriesFile = fileURLToPath(
+  new URL("../data/deliveries.json", import.meta.url),
+);
 
 async function readDeliveries() {
   try {
-    const rawData = await readFile("./data/deliveries.json", "utf-8");
+    const rawData = await readFile(deliveriesFile, "utf-8");
     if (rawData.trim().length === 0) {
       return [];
     }
@@ -31,7 +36,7 @@ async function readDeliveries() {
       );
     } else {
       console.error(
-        "Error in reading or parsing Data of Deliveries. TRY AGAIN!",
+        "Error reading or parsing delivery data. Please try again.",
       );
     }
     process.exit(1);
@@ -39,7 +44,9 @@ async function readDeliveries() {
 }
 
 async function main() {
-  console.log("WELCOME TO Delivery Route Planner!");
+  await clearPreviousOutputs();
+
+  console.log("Welcome to the Delivery Route Planner!");
   console.log("=====================================================");
 
   const deliveries = await readDeliveries();
@@ -52,14 +59,15 @@ async function main() {
   }
   console.log("----------------------------------------------------");
 
-  const { trips, rejectedDeliveries } = planDeliveryTrips(deliveries);
+  const { trips, rejectedDeliveries } = await planDeliveryTrips(deliveries);
 
   if (rejectedDeliveries.length === 0) {
     console.log(`No rejected deliveries. Total Rejected Deliveries: 0`);
   } else {
+    const rejectionCount = rejectedDeliveries.length;
+    const deliveryLabel = rejectionCount === 1 ? "delivery was rejected" : "deliveries were rejected";
     console.log(
-      `There is ${rejectedDeliveries.length} rejected deliveries. Cause: Exceeds maximum vehicle 10 kg capacity!
-Rejected Deliveries:`,
+      `${rejectionCount} ${deliveryLabel}. Rejected because one or more delivery fields are invalid.\nRejected Deliveries:`,
       rejectedDeliveries,
     );
   }
@@ -72,7 +80,7 @@ Rejected Deliveries:`,
   summary(trips, rejectedDeliveries);
 
   console.log("=====================================================");
-  console.log("THANK YOU FOR USING Delivery Route Planner!");
+  console.log("Thank you for using the Delivery Route Planner!");
 }
 
 main();

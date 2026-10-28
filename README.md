@@ -60,7 +60,7 @@ Node.js program that organizes delivery requests into trips. Each trip has a max
 1. Clone or download the repository as a ZIP file, then open a terminal in the project directory.
 2. Navigate to the project directory:
    ```bash
-   cd delivery-router
+   cd project-folder
    ```
 3. Install dependencies:
    ```bash
