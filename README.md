@@ -9,17 +9,19 @@ Node.js program that organizes delivery requests into trips. Each trip has a max
 - [Node.js](https://nodejs.org/) (v18 or higher recommended)
 
 ### Steps
-1. Clone or download the repository as Zip file, then navigate to the project directory:
+
+1. Clone or download the repository as a ZIP file, then open a terminal in the project directory.
+2. Navigate to the project directory:
    ```bash
    cd project-folder
-1. Open a terminal in the project directory.
-2. Install dependencies:
+   ```
+3. Install dependencies:
    ```bash
    npm install
    ```
-3. Run the program:
+4. Run the program:
    ```bash
-   npm start 
+   npm start
    ```
 
 The program reads deliveries from `data/deliveries.json`.
