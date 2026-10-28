@@ -1,5 +1,52 @@
 # Delivery Route Planner
 
+![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg?logo=node.js&logoColor=white)
+
+A Node.js application that organizes delivery requests into efficient trips with a maximum vehicle capacity of **10 kg**. It validates incoming deliveries, groups compatible orders, and records both scheduled trips and rejected deliveries.
+
+## Overview
+
+Delivery Route Planner helps turn delivery data stored in JSON format into trip plans. The planner prioritizes deliveries, groups orders from the same area when capacity allows, and produces clear output files that can be reviewed through the terminal.
+
+## Features
+
+- Reads deliveries from a JSON input file.
+- Rejects deliveries with invalid or unsupported weights.
+- Groups deliveries by area within the 10 kg trip capacity.
+- Sorts deliveries by priority and area.
+- Generates separate trip and rejected-delivery JSON outputs.
+- Prints a quick planning summary in the terminal.
+
+## Repository Structure
+
+```text
+├── data/
+│   ├── deliveries.json
+│   ├── trips.json
+│   └── rejectedDeliveries.json
+├── src/
+│   ├── index.js
+│   └── planner.js
+├── package.json
+└── README.md
+```
+
+## Quick Start
+
+```bash
+npm install
+npm start
+```
+
+Generated results are written to the `data` folder while the terminal prints the trips, rejected deliveries, and summary.
+
+## Output
+
+| File | Purpose |
+| --- | --- |
+| `data/trips.json` | Scheduled trips and their deliveries |
+| `data/rejectedDeliveries.json` | Deliveries that could not be scheduled |
+
 Node.js program that organizes delivery requests into trips. Each trip has a maximum capacity of 10 kg.
 
 ## Installation and Running
@@ -9,17 +56,19 @@ Node.js program that organizes delivery requests into trips. Each trip has a max
 - [Node.js](https://nodejs.org/) (v18 or higher recommended)
 
 ### Steps
-1. Clone or download the repository as Zip file, then navigate to the project directory:
+
+1. Clone or download the repository as a ZIP file, then open a terminal in the project directory.
+2. Navigate to the project directory:
    ```bash
-   cd project-folder
-1. Open a terminal in the project directory.
-2. Install dependencies:
+   cd delivery-router
+   ```
+3. Install dependencies:
    ```bash
    npm install
    ```
-3. Run the program:
+4. Run the program:
    ```bash
-   npm start 
+   npm start
    ```
 
 The program reads deliveries from `data/deliveries.json`.
