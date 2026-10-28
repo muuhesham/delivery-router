@@ -16,6 +16,7 @@ export function isValidDelivery(delivery) {
     Number.isInteger(delivery.id) && delivery.id > 0 &&
     typeof delivery.area === "string" && delivery.area.trim().length > 0 &&
     Number.isInteger(delivery.priority) && delivery.priority > 0 &&
+    delivery.priority <= 3 &&
     typeof delivery.weight === "number" &&
     Number.isFinite(delivery.weight) &&
     delivery.weight > 0 && delivery.weight <= 10

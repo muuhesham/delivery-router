@@ -1,0 +1,161 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 24px;
+  background: #1d1f21;
+  color: #d6d6d6;
+  font-family: Consolas, "Courier New", monospace;
+}
+.terminal-window {
+  width: min(980px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid #3d4144;
+  border-radius: 8px;
+  background: #111315;
+  box-shadow: 0 18px 50px rgb(0 0 0 / 45%);
+}
+.terminal-titlebar {
+  height: 38px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #34383b;
+  background: #2b2e31;
+  color: #f1f1f1;
+}
+.terminal-titlebar strong {
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 13px;
+}
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.red {
+  background: #ff5f56;
+}
+.yellow {
+  background: #ffbd2e;
+}
+.green {
+  background: #27c93f;
+}
+.terminal-content {
+  padding: 20px;
+}
+.status {
+  margin-bottom: 18px;
+  color: #7ee787;
+}
+.panel {
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px dashed #45494c;
+}
+h2 {
+  margin-top: 0;
+  color: #79c0ff;
+  font-size: 18px;
+}
+form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
+}
+label {
+  display: grid;
+  gap: 6px;
+  color: #b9b9b9;
+}
+input,
+button {
+  border-radius: 4px;
+  border: 1px solid #50555a;
+  background: #191b1e;
+  color: #e6e6e6;
+  font: inherit;
+  padding: 8px;
+}
+button {
+  cursor: pointer;
+  background: #214a2b;
+  border-color: #2ea043;
+}
+button:hover {
+  background: #2a6037;
+}
+.rejected-delivery {
+  color: #ff7b72;
+  margin: 8px 0;
+  padding: 8px;
+  border-left: 3px solid #f85149;
+  background: rgb(248 81 73 / 10%);
+}
+.summary-card {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid #d29922;
+  border-left: 3px solid #e3b341;
+  border-radius: 5px;
+  background: rgb(227 179 65 / 10%);
+}
+.output-list {
+  max-height: 140px;
+  overflow-y: hidden;
+}
+.output-list.expanded {
+  max-height: 260px;
+  overflow-y: auto;
+}
+.see-more-button {
+  margin-top: 10px;
+}
+.output pre {
+  margin: 10px 0;
+  padding: 14px;
+  overflow-x: auto;
+  border-left: 3px solid #30363d;
+  background: #0d1117;
+}
+.trip-card {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid #30363d;
+  border-left: 3px solid #79c0ff;
+  border-radius: 5px;
+  background: #0d1117;
+}
+.trip-deliveries {
+  display: grid;
+  gap: 5px;
+  padding-top: 8px;
+  color: #b7c0c8;
+}
+.delivery {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #292d32;
+}
+@media (max-width: 760px) {
+  body {
+    padding: 0;
+  }
+  form {
+    grid-template-columns: 1fr;
+  }
+  .delivery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
