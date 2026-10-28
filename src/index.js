@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { planDeliveryTrips, summary } from "./planner.js";
+import { clearPreviousOutputs, planDeliveryTrips, summary } from "./planner.js";
 
 const deliveriesFile = fileURLToPath(
   new URL("../data/deliveries.json", import.meta.url),
@@ -44,6 +44,8 @@ async function readDeliveries() {
 }
 
 async function main() {
+  await clearPreviousOutputs();
+
   console.log("Welcome to the Delivery Route Planner!");
   console.log("=====================================================");
 
@@ -57,7 +59,7 @@ async function main() {
   }
   console.log("----------------------------------------------------");
 
-  const { trips, rejectedDeliveries } = planDeliveryTrips(deliveries);
+  const { trips, rejectedDeliveries } = await planDeliveryTrips(deliveries);
 
   if (rejectedDeliveries.length === 0) {
     console.log(`No rejected deliveries. Total Rejected Deliveries: 0`);

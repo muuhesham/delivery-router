@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import fs from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 const deliveriesFile = fileURLToPath(
@@ -22,31 +22,31 @@ export function isValidDelivery(delivery) {
   );
 }
 
-export function getDeliveries() {
-  return JSON.parse(fs.readFileSync(deliveriesFile, "utf-8"));
+export async function getDeliveries() {
+  return JSON.parse(await fs.readFile(deliveriesFile, "utf-8"));
 }
 
-function saveDeliveries(deliveries) {
-  fs.writeFileSync(deliveriesFile, JSON.stringify(deliveries, null, 2), "utf-8");
+async function saveDeliveries(deliveries) {
+  await fs.writeFile(deliveriesFile, JSON.stringify(deliveries, null, 2), "utf-8");
 }
 
-export function addDelivery(delivery) {
+export async function addDelivery(delivery) {
   if (!isValidDelivery(delivery)) {
     throw new Error("Invalid delivery data.");
   }
 
-  const deliveries = getDeliveries();
+  const deliveries = await getDeliveries();
   if (deliveries.some((item) => item.id === delivery.id)) {
     throw new Error("A delivery with this ID already exists.");
   }
 
   deliveries.push(delivery);
-  saveDeliveries(deliveries);
+  await saveDeliveries(deliveries);
   return delivery;
 }
 
-export function deleteDelivery(id) {
-  const deliveries = getDeliveries();
+export async function deleteDelivery(id) {
+  const deliveries = await getDeliveries();
   const deliveryIndex = deliveries.findIndex((delivery) => delivery.id === id);
 
   if (deliveryIndex === -1) {
@@ -55,12 +55,12 @@ export function deleteDelivery(id) {
 
   const deletedDelivery = deliveries[deliveryIndex];
   deliveries.splice(deliveryIndex, 1);
-  saveDeliveries(deliveries);
+  await saveDeliveries(deliveries);
   return deletedDelivery;
 }
 
-export function updateDelivery(id, updates) {
-  const deliveries = getDeliveries();
+export async function updateDelivery(id, updates) {
+  const deliveries = await getDeliveries();
   const deliveryIndex = deliveries.findIndex((delivery) => delivery.id === id);
 
   if (deliveryIndex === -1) {
@@ -77,28 +77,47 @@ export function updateDelivery(id, updates) {
   }
 
   deliveries[deliveryIndex] = updatedDelivery;
-  saveDeliveries(deliveries);
+  await saveDeliveries(deliveries);
   return updatedDelivery;
 }
 
-let deletedPreviousOutput = false;
-if (fs.existsSync(tripsFile)) {
-  fs.unlinkSync(tripsFile);
-  deletedPreviousOutput = true;
-}
-if (fs.existsSync(rejectedDeliveriesFile)) {
-  fs.unlinkSync(rejectedDeliveriesFile);
-  deletedPreviousOutput = true;
-}
-
-if (deletedPreviousOutput) {
-  console.log("Deleted previous trips.json & rejectedDeliveries.json files.");
-  console.log("------------------------------------------------------------");
+async function fileExists(path) {
+  try {
+    await fs.access(path);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-export function planDeliveryTrips(deliveries) {
-  const rejectedDeliveries = deliveries.filter((delivery) => !isValidDelivery(delivery));
-  const validDeliveries = deliveries.filter(isValidDelivery);
+export async function clearPreviousOutputs() {
+  let deletedPreviousOutput = false;
+  if (await fileExists(tripsFile)) {
+    await fs.unlink(tripsFile);
+    deletedPreviousOutput = true;
+  }
+  if (await fileExists(rejectedDeliveriesFile)) {
+    await fs.unlink(rejectedDeliveriesFile);
+    deletedPreviousOutput = true;
+  }
+
+  if (deletedPreviousOutput) {
+    console.log("Deleted previous trips.json & rejectedDeliveries.json files.");
+    console.log("------------------------------------------------------------");
+  }
+}
+
+export async function planDeliveryTrips(deliveries) {
+  const validDeliveries = [];
+  const rejectedDeliveries = [];
+
+  for (const delivery of deliveries) {
+    if (isValidDelivery(delivery)) {
+      validDeliveries.push(delivery);
+    } else {
+      rejectedDeliveries.push(delivery);
+    }
+  }
 
   validDeliveries.sort((a, b) => {
     if (a.priority !== b.priority) {
@@ -135,8 +154,8 @@ export function planDeliveryTrips(deliveries) {
     trips.push(currentTrip);
   }
   
-  fs.writeFileSync(tripsFile, JSON.stringify(trips), "utf-8");
-  fs.writeFileSync(rejectedDeliveriesFile, JSON.stringify(rejectedDeliveries), "utf-8");
+  await fs.writeFile(tripsFile, JSON.stringify(trips), "utf-8");
+  await fs.writeFile(rejectedDeliveriesFile, JSON.stringify(rejectedDeliveries), "utf-8");
 
   return {
     trips,
