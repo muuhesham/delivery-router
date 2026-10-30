@@ -6,6 +6,7 @@ import {
   deleteDelivery,
   getDeliveries,
   planDeliveryTrips,
+  planDeliveryTripsByPriority,
   updateDelivery,
 } from "./planner.js";
 
@@ -52,6 +53,14 @@ app.delete("/api/deliveries/:id", async (request, response, next) => {
 app.post("/api/plan", async (request, response, next) => {
   try {
     response.json(await planDeliveryTrips(await getDeliveries()));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/plan/priority", async (request, response, next) => {
+  try {
+    response.json(await planDeliveryTripsByPriority(await getDeliveries()));
   } catch (error) {
     next(error);
   }

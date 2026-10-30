@@ -1,19 +1,14 @@
-import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
-import { clearPreviousOutputs, planDeliveryTrips, summary } from "./planner.js";
-
-const deliveriesFile = fileURLToPath(
-  new URL("../data/deliveries.json", import.meta.url),
-);
+import {
+  clearPreviousOutputs,
+  getDeliveries,
+  planDeliveryTrips,
+  planDeliveryTripsByPriority,
+  summary,
+} from "./planner.js";
 
 async function readDeliveries() {
   try {
-    const rawData = await readFile(deliveriesFile, "utf-8");
-    if (rawData.trim().length === 0) {
-      return [];
-    }
-
-    const deliveries = JSON.parse(rawData);
+    const deliveries = await getDeliveries();
     if (Array.isArray(deliveries) && deliveries.length === 0) {
       return [];
     }
@@ -59,7 +54,9 @@ async function main() {
   }
   console.log("----------------------------------------------------");
 
-  const { trips, rejectedDeliveries } = await planDeliveryTrips(deliveries);
+  const standardResult = await planDeliveryTrips(deliveries);
+  const priorityResult = await planDeliveryTripsByPriority(deliveries);
+  const { trips, rejectedDeliveries } = standardResult;
 
   if (rejectedDeliveries.length === 0) {
     console.log(`No rejected deliveries. Total Rejected Deliveries: 0`);
@@ -78,6 +75,12 @@ async function main() {
   console.dir(trips, { depth: null });
 
   summary(trips, rejectedDeliveries);
+
+  console.log("=====================================================");
+  console.log("PRIORITY-BASED TRIP PLAN");
+  console.log("=====================================================");
+  console.log(`Priority-based Trips: ${priorityResult.trips.length}`);
+  console.dir(priorityResult.trips, { depth: null });
 
   console.log("=====================================================");
   console.log("Thank you for using the Delivery Route Planner!");

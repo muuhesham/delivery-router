@@ -8,6 +8,17 @@ const tripsFile = fileURLToPath(new URL("../data/trips.json", import.meta.url));
 const rejectedDeliveriesFile = fileURLToPath(
   new URL("../data/rejectedDeliveries.json", import.meta.url),
 );
+const seedDeliveriesFile = fileURLToPath(
+  new URL("../data/seed-deliveries.json", import.meta.url),
+);
+
+function roundToOneDecimal(value) {
+  return Math.round(value * 10) / 10;
+}
+
+async function getSeedDeliveries() {
+  return JSON.parse(await fs.readFile(seedDeliveriesFile, "utf-8"));
+}
 
 export function isValidDelivery(delivery) {
   return (
@@ -24,7 +35,31 @@ export function isValidDelivery(delivery) {
 }
 
 export async function getDeliveries() {
-  return JSON.parse(await fs.readFile(deliveriesFile, "utf-8"));
+  try {
+    const rawData = await fs.readFile(deliveriesFile, "utf-8");
+    if (rawData.trim().length === 0) {
+      const seedDeliveries = await getSeedDeliveries();
+      await fs.writeFile(deliveriesFile, JSON.stringify(seedDeliveries, null, 2), "utf-8");
+      return seedDeliveries;
+    }
+
+    const deliveries = JSON.parse(rawData);
+    if (deliveries.length === 0) {
+      const seedDeliveries = await getSeedDeliveries();
+      await fs.writeFile(deliveriesFile, JSON.stringify(seedDeliveries, null, 2), "utf-8");
+      return seedDeliveries;
+    }
+
+    return deliveries;
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      throw error;
+    }
+
+    const seedDeliveries = await getSeedDeliveries();
+    await fs.writeFile(deliveriesFile, JSON.stringify(seedDeliveries, null, 2), "utf-8");
+    return seedDeliveries;
+  }
 }
 
 async function saveDeliveries(deliveries) {
@@ -136,18 +171,23 @@ export async function planDeliveryTrips(deliveries) {
     let currentTrip = {
       tripId: trips.length + 1,
       deliveries: [firstDelivery],
-      totalWeight: firstDelivery.weight,
-      remainingWeight: 10.0 - firstDelivery.weight,
+      totalWeight: roundToOneDecimal(firstDelivery.weight),
+      remainingWeight: roundToOneDecimal(10.0 - firstDelivery.weight),
       area: firstDelivery.area,
     };
 
     for (let i = 0; i < remainingDeliveries.length; i++) {
       const delivery = remainingDeliveries[i];
 
-      if (delivery.area === currentTrip.area && currentTrip.totalWeight + delivery.weight <= 10.0) {
+      const totalWithDelivery = roundToOneDecimal(
+        currentTrip.totalWeight + delivery.weight,
+      );
+      if (delivery.area === currentTrip.area && totalWithDelivery <= 10.0) {
         currentTrip.deliveries.push(delivery);
-        currentTrip.totalWeight = currentTrip.totalWeight + delivery.weight;
-        currentTrip.remainingWeight = 10.0 - currentTrip.totalWeight;
+        currentTrip.totalWeight = totalWithDelivery;
+        currentTrip.remainingWeight = roundToOneDecimal(
+          10.0 - currentTrip.totalWeight,
+        );
         remainingDeliveries.splice(i, 1);
         i--;
       }
@@ -164,6 +204,48 @@ export async function planDeliveryTrips(deliveries) {
   };
 }
 
+export async function planDeliveryTripsByPriority(deliveries) {
+  const validDeliveries = deliveries.filter(isValidDelivery);
+  const rejectedDeliveries = deliveries.filter(
+    (delivery) => !isValidDelivery(delivery),
+  );
+  const sortedDeliveries = [...validDeliveries].sort((a, b) =>
+    a.priority !== b.priority
+      ? a.priority - b.priority
+      : a.area.localeCompare(b.area),
+  );
+  const trips = [];
+  let remainingDeliveries = [...sortedDeliveries];
+
+  while (remainingDeliveries.length > 0) {
+    const currentTrip = {
+      tripId: trips.length + 1,
+      deliveries: [],
+      totalWeight: 0,
+      remainingWeight: 10,
+      area: "Multiple areas",
+    };
+
+    for (let i = 0; i < remainingDeliveries.length; i++) {
+      const delivery = remainingDeliveries[i];
+      const totalWithDelivery = roundToOneDecimal(
+        currentTrip.totalWeight + delivery.weight,
+      );
+      if (totalWithDelivery <= 10) {
+        currentTrip.deliveries.push(delivery);
+        currentTrip.totalWeight = totalWithDelivery;
+        remainingDeliveries.splice(i, 1);
+        i--;
+      }
+    }
+
+    currentTrip.remainingWeight = roundToOneDecimal(10 - currentTrip.totalWeight);
+    trips.push(currentTrip);
+  }
+
+  return { trips, rejectedDeliveries };
+}
+
 export function summary(trips, rejectedDeliveries) {
     console.log("=====================================================");
     console.log("QUICK SUMMARY")
@@ -171,11 +253,15 @@ export function summary(trips, rejectedDeliveries) {
 
     const totalTrips = trips.length;
     const totalRejectedDeliveries = rejectedDeliveries.length;
-    const totalCapacity = trips.length * 10;
-    const totalWeight = trips.reduce((acc, trip) => acc + trip.totalWeight, 0);
+    const totalCapacity = roundToOneDecimal(trips.length * 10);
+    const totalWeight = roundToOneDecimal(
+      trips.reduce((acc, trip) => acc + trip.totalWeight, 0),
+    );
     console.log(`Total Trips : ${totalTrips}`);
     console.log(`Total Rejected Deliveries : ${totalRejectedDeliveries}`);
     console.log(`Total Capacity : ${totalCapacity} kg`);
     console.log(`Total Weight of Deliveries : ${totalWeight} kg`);
-    console.log(`Total Wasted Capacity : ${totalCapacity - totalWeight}`);
+    console.log(
+      `Total Wasted Capacity : ${roundToOneDecimal(totalCapacity - totalWeight)}`,
+    );
 }
