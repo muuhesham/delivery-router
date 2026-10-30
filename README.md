@@ -9,6 +9,7 @@ A Node.js application that manages delivery requests and organizes them into tri
 Delivery Route Planner reads delivery data from JSON and provides browser and API tools for managing deliveries. The planner prioritizes deliveries, groups orders from the same area when capacity allows, and generates trip plans and summaries through the browser or terminal.
 
 <img width="1808" height="972" alt="image" src="https://github.com/user-attachments/assets/bf6b2321-daf5-4534-9237-8c55ebceb2e0" />
+<img width="1914" height="1018" alt="image" src="https://github.com/user-attachments/assets/b1c8737d-790d-4c57-9365-6b9fa56b1091" />
 
 ## Features
 
