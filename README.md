@@ -2,19 +2,23 @@
 
 ![Node.js](https://img.shields.io/badge/Node.js-18+-339933.svg?logo=node.js&logoColor=white)
 
-A Node.js application that organizes delivery requests into efficient trips with a maximum vehicle capacity of **10 kg**. It validates incoming deliveries, groups compatible orders, and records both scheduled trips and rejected deliveries.
+A Node.js application that manages delivery requests and organizes them into trips with a maximum vehicle capacity of **10 kg**. It provides a web interface and a CLI, validates deliveries, groups compatible orders, and records scheduled trips and rejected deliveries.
 
 ## Overview
 
-Delivery Route Planner helps turn delivery data stored in JSON format into trip plans. The planner prioritizes deliveries, groups orders from the same area when capacity allows, and produces clear output files that can be reviewed through the terminal.
+Delivery Route Planner reads delivery data from JSON and provides browser and API tools for managing deliveries. The planner prioritizes deliveries, groups orders from the same area when capacity allows, and generates trip plans and summaries through the browser or terminal.
 
 ## Features
 
 - Reads deliveries from a JSON input file.
-- Rejects deliveries with invalid or unsupported weights.
+- Provides a browser interface for managing deliveries.
+- Supports creating, updating, deleting, listing, and planning deliveries through a REST API.
+- Rejects deliveries with invalid fields, unsupported priorities, or invalid weights.
 - Groups deliveries by area within the 10 kg trip capacity.
 - Sorts deliveries by priority and area.
 - Generates separate trip and rejected-delivery JSON outputs.
+- Generates both area-based and priority-based trip plans.
+- Provides a priority-based planning button in the web interface.
 - Prints a quick planning summary in the terminal.
 
 ## Repository Structure
@@ -22,11 +26,17 @@ Delivery Route Planner helps turn delivery data stored in JSON format into trip 
 ```text
 ├── data/
 │   ├── deliveries.json
+│   ├── seed-deliveries.json
 │   ├── trips.json
 │   └── rejectedDeliveries.json
+├── client/
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
 ├── src/
 │   ├── index.js
-│   └── planner.js
+│   ├── planner.js
+│   └── server.js
 ├── package.json
 └── README.md
 ```
@@ -38,7 +48,17 @@ npm install
 npm start
 ```
 
-Generated results are written to the `data` folder while the terminal prints the trips, rejected deliveries, and summary.
+Then open `http://localhost:3000` in your browser. `npm start` runs the Express server and its web interface.
+
+To run the planner in the terminal instead, use:
+
+```bash
+npm run cli
+```
+
+The CLI displays both the area-based trip plan and the priority-based trip plan.
+
+In the web interface, **Generate Trips** uses the area-based planner, while **Generate by Priority** uses the priority-based planner. Generated results are written to the `data` folder.
 
 ## Output
 
@@ -46,8 +66,6 @@ Generated results are written to the `data` folder while the terminal prints the
 | --- | --- |
 | `data/trips.json` | Scheduled trips and their deliveries |
 | `data/rejectedDeliveries.json` | Deliveries that could not be scheduled |
-
-Node.js program that organizes delivery requests into trips. Each trip has a maximum capacity of 10 kg.
 
 ## Installation and Running
 
@@ -71,7 +89,7 @@ Node.js program that organizes delivery requests into trips. Each trip has a max
    npm start
    ```
 
-The program reads deliveries from `data/deliveries.json`.
+The web application reads and updates deliveries in `data/deliveries.json`.
 
 The input format is JSON. Each delivery must contain:
 
@@ -84,76 +102,24 @@ The input format is JSON. Each delivery must contain:
 }
 ```
 
+The ID must be a positive integer, the area must be non-empty, the priority must be an integer from 1 to 3, and the weight must be a finite number greater than 0 kg and no more than 10 kg.
+
 ## Solution Approach
 
-1. Read the deliveries from `data/deliveries.json`.
-2. Reject deliveries with a weight greater than 10 kg or a non-positive weight.
-3. Sort valid deliveries by priority. Lower priority numbers are handled first.
-4. Group deliveries from the same area when the trip still has enough capacity.
-5. Save the generated trips and rejected deliveries in the `data` folder.
-6. Print a short summary of the result.
+The program uses a greedy approach: it validates the deliveries, sorts valid orders by priority and area, starts each trip with the highest-priority delivery, and fills it with orders from the same area until the 10 kg limit is reached. Every valid delivery is assigned once, while invalid weights and weights above 10 kg are rejected.
 
-Every valid delivery is added to exactly one trip, and no trip exceeds 10 kg.
+An additional priority-based mode sorts deliveries by priority first, then groups fitting deliveries into trips that may contain multiple areas.
 
+### Assignment Notes
 
+- **Challenges:** Balancing urgent deliveries with area grouping and floating-point weights within the 10 kg limit.
+- **Limitations:** This greedy method may leave trips underfilled or miss combinations with better capacity utilization.
+- **Large datasets:** Loading millions of deliveries into memory would be inefficient. The scalable solution would use a database and process records in batches or streams.
+- **Future improvements:** Add automated tests and database storage with indexes for larger datasets.
 
-### 1. Explain your solution approach in your own words.
+### Output
 
-The program uses a **Greedy heuristic approach**:
-1. **Filtering:** Separates packages exceeding 10.0 kg or with invalid weights into `rejectedDeliveries`.
-2. **Sorting:** Sorts valid deliveries by `priority` first (most urgent first), then by `area`.
-3. **Trip Assembly:** Picks the highest-priority delivery to initiate a trip, then scans remaining items to pack orders for the **exact same area** until reaching vehicle capacity (10.0 kg).
+- `data/trips.json`: generated trips.
+- `data/rejectedDeliveries.json`: deliveries rejected for invalid or excessive weight.
 
-Focusing on the same area minimizes vehicle transit overhead, saves fuel, and cuts operational costs while honoring delivery urgency.
-
----
-
-### 2. What was the most difficult part of the assignment?
-
-Balancing **urgency (priority)** against **operational cost (area grouping)** under the 10.0 kg limit. Strictly following priority scatters trips across different areas, while strictly grouping by area delays urgent orders. Resolving this required starting each trip with the top-priority item and filling remaining capacity from the same area, alongside handling JavaScript floating-point rounding.
-
----
-
-### 3. Are there situations where your algorithm may not produce the best possible grouping?
-
-Yes, because the greedy approach takes immediate matches instead of finding the global best fit:
-- **Sub-optimal Packing:** Picking the first fitting parcel might block a combination of other parcels that could utilize 100% of the 10 kg capacity.
-- **Priority Trade-off:** A non-urgent order (Priority 3) in the same area is loaded before an urgent order (Priority 1) in a different area.
-- **Underfilled Vehicles:** If an area only has a single small package (e.g., 2 kg), the truck dispatches mostly empty rather than serving a neighboring zone.
-
----
-
-### 4. If the input contained 1,000,000 delivery requests, what part of your solution might become slow or memory-intensive?
-
-- **In-Memory Bottlenecks:** Loading 1,000,000 JSON records into RAM risks `JavaScript heap out of memory`.
-
-
-**At-scale solution:**
-- Store records in a database (like PostgreSQL) with composite indexes on `(area, priority, weight)`.
-- Query and process batches incrementally using database cursors/streams instead of parsing one monolithic file into memory.
-
----
-
-### 5. What would you improve if you had another day to work on the solution?
-
-1. **Lightweight Frontend UI:** Build a simple web dashboard for dispatchers to upload files, visualize vehicle fill rates, and inspect trips.
-2. **Database & Indexing:** Migrate from static JSON files to an indexed database for scalable batch processing.
-3. **Automated Unit Tests:** Add test suites covering 10.0 kg capacity boundaries, negative weights, and floating-point edge cases.
-
-
-## Additional Feature
-
-The program includes two useful output files:
-
-- `data/trips.json`: contains the trips created from the valid deliveries.
-- `data/rejectedDeliveries.json`: contains deliveries that could not be scheduled because their weight is greater than 10 kg or is not positive.
-
-It also prints a quick summary based on the generated trips and the input data, including:
-
-- Total number of trips
-- Total number of rejected deliveries
-- Total vehicle capacity
-- Total delivery weight
-- Wasted capacity
-
-These files are regenerated each time the program runs.
+The terminal summary shows trip count, rejected count, total capacity, delivery weight, and wasted capacity. These files are regenerated on each run.

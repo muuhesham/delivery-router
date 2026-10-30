@@ -1,16 +1,16 @@
 {
-  "name": "delivery-router",
+  "name": "delivery-route",
   "version": "1.0.0",
   "description": "A Node.js delivery route planner that groups deliveries into trips and reports rejected deliveries.",
   "main": "src/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/muuhesham/delivery-router.git"
+    "url": "https://github.com/muuhesham/delivery-route.git"
   },
   "bugs": {
-    "url": "https://github.com/muuhesham/delivery-router/issues"
+    "url": "https://github.com/muuhesham/delivery-route/issues"
   },
-  "homepage": "https://github.com/muuhesham/delivery-router#readme",
+  "homepage": "https://github.com/muuhesham/delivery-route#readme",
   "keywords": [
     "delivery",
     "route-planning",
@@ -19,7 +19,8 @@
   ],
   "scripts": {
     "cli": "nodemon --ignore data/trips.json --ignore data/rejectedDeliveries.json src/index.js",
-    "server": "nodemon src/server.js"
+    "server": "nodemon src/server.js",
+    "start": "node src/server.js"
   },
   "author": "",
   "license": "MIT",

@@ -1,4 +1,5 @@
 /.vscode
 *.pdf
-/data
+/data/rejectedDeliveries.json
+/data/trips.json
 /node_modules
